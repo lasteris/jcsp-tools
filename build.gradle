@@ -1,5 +1,4 @@
 plugins {
-    id 'java'
     id 'io.quarkus'
 }
 
@@ -13,6 +12,8 @@ dependencies {
     implementation 'io.quarkus:quarkus-rest'
     implementation 'io.quarkus:quarkus-rest-jackson'
     implementation 'io.quarkus:quarkus-arc'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
     testImplementation 'io.quarkus:quarkus-junit5'
 }
 
@@ -20,18 +21,32 @@ group 'su.lasteris'
 version '1.0.0.0'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+        vendor = JvmVendorSpec.AMAZON
+    }
 }
 
 test {
     systemProperty "java.util.logging.manager", "org.jboss.logmanager.LogManager"
 }
+
 compileJava {
     options.encoding = 'UTF-8'
-    options.compilerArgs << '-parameters'
+    options.compilerArgs.addAll([
+            '-parameters',
+            '--add-exports', 'java.xml.crypto/com.sun.org.apache.xml.internal.security=ALL-UNNAMED',
+            '--add-exports', 'java.xml.crypto/com.sun.org.apache.xml.internal.security.c14n=ALL-UNNAMED'])
 }
 
 compileTestJava {
     options.encoding = 'UTF-8'
+}
+
+quarkusDev {
+    setJvmArgs([
+            '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+            '--add-exports', 'java.xml.crypto/com.sun.org.apache.xml.internal.security=ALL-UNNAMED',
+            '--add-exports', 'java.xml.crypto/com.sun.org.apache.xml.internal.security.c14n=ALL-UNNAMED'
+    ])
 }
